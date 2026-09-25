@@ -1,0 +1,33 @@
+name: markitdown
+
+services:
+  back:
+    build: ./back
+    container_name: markitdown-back
+    restart: unless-stopped
+    environment:
+      - MAX_UPLOAD_MB=${MAX_UPLOAD_MB:-25}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    # Sin "ports": el back solo es accesible desde el front por la red interna de Docker.
+
+  front:
+    build: ./front
+    container_name: markitdown-front
+    restart: unless-stopped
+    depends_on:
+      back:
+        condition: service_healthy
+    ports:
+      # Acceso desde tu red local: http://<IP-raspberry>:8080
+      - "${FRONT_PORT:-8080}:80"
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: markitdown-cloudflared
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN:?Define CLOUDFLARE_TUNNEL_TOKEN en el archivo .env}
+    depends_on:
+      front:
+        condition: service_healthy

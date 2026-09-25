@@ -22,3 +22,12 @@ lerna-debug.log*
 # temp directory
 .temp
 .tmp
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Front
+node_modules/
+dist/
